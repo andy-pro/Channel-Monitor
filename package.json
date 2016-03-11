@@ -1,0 +1,12 @@
+{
+  "name": "Channel Monitor",
+  "version": "1.1",
+  "repository": "https://github.com/andy-pro/Channel-Monitor",
+  "description": "System designed for monitoring channel-forming equipment in realtime",
+  "main": "index.js",
+  "author": "andy-pro",
+  "dependencies": {
+    "serialport": "*",
+    "colors": "*"
+  }
+}

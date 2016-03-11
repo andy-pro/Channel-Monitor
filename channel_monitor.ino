@@ -263,7 +263,7 @@ void loop() {
       } else
       
       if (cmd == "ver") {
-        Serial.println("firmware version 1.0 on Arduino Leonardo");
+        Serial.println("firmware version 1.1 on Arduino Leonardo");
       } else
 
       if (cmd != "") Serial.println("no such command");      

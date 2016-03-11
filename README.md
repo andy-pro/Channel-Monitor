@@ -3,7 +3,7 @@
 System designed for monitoring channel-forming equipment in realtime and consists of:
   - Arduino Leonardo Board
   - Interface module
-  - Web Server (node.js, Express, Serial lib)
+  - Web Server ([node.js](https://nodejs.org), [SerialPort lib](https://github.com/voodootikigod/node-serialport), [Multi App Server](https://github.com/andy-pro/MultiAppServer))
   - kilometer of wires
 
 > Maximum of scanned channels - 12.
