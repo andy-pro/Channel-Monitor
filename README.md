@@ -18,7 +18,7 @@ System designed for monitoring channel-forming equipment in realtime and consist
 
 ### Version
 
-1.1
+1.1.0
 
 ### Commands
 

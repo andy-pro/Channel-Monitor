@@ -14,7 +14,7 @@
 // global constants
 #define FREQ 800
 #define _speed 115200
-#define _squelch 20 /* 70-80 for meandr */
+#define _squelch 10 /* 70-80 for meandr */
 #define _freq_delta 5
 #define _channel_cnt 12
 #define _EE_MASK_ADDR 0
@@ -22,7 +22,8 @@
 
 #define _btn 7
 #define _gen 11
-#define ADMUX_SETUP (1<<REFS0)|(1<<ADLAR) // Aref = AVcc, left align the ADC value - so we can read highest 8 bits from ADCH register only
+// Aref = Internal 2.56V Reference, left align the ADC value - read ADCH only
+#define ADMUX_SETUP (1<<REFS1)|(1<<REFS0)|(1<<ADLAR) 
 
 #define _buzzer 3
 #define _led 13

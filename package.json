@@ -1,6 +1,6 @@
 {
-  "name": "Channel Monitor",
-  "version": "1.1",
+  "name": "Channel-Monitor",
+  "version": "1.1.0",
   "repository": "https://github.com/andy-pro/Channel-Monitor",
   "description": "System designed for monitoring channel-forming equipment in realtime",
   "main": "index.js",
