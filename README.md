@@ -9,10 +9,12 @@ System designed for monitoring channel-forming equipment in realtime and consist
 > Maximum of scanned channels - 12.
 
 ***
+![logo](logo-640x246.png "Node.js & Arduino Friendship Forever")  
+***
 ![decouple pcb](decouple.jpg "Arduino Leonardo & Interface module")  
 *Fig.1 Arduino Leonardo board and Interface module*  
 ***
-![decouple pcb](couple.jpg "Arduino Leonardo & Interface module")  
+![couple pcb](couple.jpg "Arduino Leonardo & Interface module")  
 *Fig.2 Assembled device*  
 ***
 

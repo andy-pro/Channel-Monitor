@@ -22,13 +22,14 @@ void tmSetup(byte pins[]) {
 
 void tmSendState(byte id) { /* for debug */
   Pattern v = patterns[id];
-  Serial.println("Task manager state for pin " + String(v.pin, DEC) + "\r\nvariable pattern");
+  Serial.print("Task manager state for pin " + String(v.pin, DEC) + "\nvariable pattern\n");
   for (byte j=0; j<5; j++) Serial.print(String(v.pvar[j], DEC) + "\t");
-  Serial.println("\r\nconstant pattern");
+  Serial.print("\nconstant pattern\n");
   for (byte j=0; j<PATTERN_MAX; j++) {
     for (byte k=0; k<5; k++) Serial.print(String(v.pconst[j*5+k], DEC) + "\t");
-    Serial.println();
+    Serial.print("\n");
   }
+  Serial.println();
 }
 
 byte tmFindId(byte pin) {

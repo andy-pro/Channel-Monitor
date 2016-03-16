@@ -42,7 +42,7 @@ word _freq, _fmin, _fmax, raw_state, masked_state, mask;
 byte alarmingChannel;
 boolean alarm = false;
 
-void setupFreq(word value) {
+word setupFreq(word value) {
   if (!value) value = FREQ;
   _freq = value;
   value = value/10;
@@ -50,6 +50,7 @@ void setupFreq(word value) {
   _fmax = value + _freq_delta;
   tone(_gen, _freq);
   digitalWrite(_buzzer, LOW);
+  return _freq;
 }
 
 void resetAlarm(boolean start) {
@@ -68,9 +69,9 @@ void testAlarm() {
 }
 
 void printState() {
-  Serial.println("Frequency set to " + String(_freq, DEC) + "Hz");
-  if (alarmingChannel) Serial.println("Alarm! Channel: " + String(alarmingChannel, DEC));
-  Serial.println("Channel\tConn\tPin\tState\tMask\tFrequency"); 
+  Serial.print("Frequency set to " + String(_freq, DEC) + "Hz");
+  if (alarmingChannel) Serial.print("\nAlarm! Channel: " + String(alarmingChannel, DEC));
+  Serial.print("\nChannel\tConn\tPin\tState\tMask\tFrequency"); 
   word m = mask;
   boolean mp;
   for (byte i=0; i < _channel_cnt; i++) {
@@ -78,8 +79,9 @@ void printState() {
     if (m&0x800) mp = 1;
     else mp = 0;
     m = m << 1;
-    Serial.println(String(i+1, DEC)+"\t"+c.conn+"\t"+c.pin+"\t"+String(c.state, DEC)+"\t"+String(mp, DEC)+"\t"+String(c.freq, DEC));
-  } 
+    Serial.print("\n"+String(i+1, DEC)+"\t"+c.conn+"\t"+c.pin+"\t"+String(c.state, DEC)+"\t"+String(mp, DEC)+"\t"+String(c.freq, DEC));
+  }
+  Serial.println();
 }
 
 void setup() {
@@ -217,20 +219,24 @@ void loop() {
       if (cmd.startsWith("setmask")) {
         mask = cmd.substring(8).toInt() & _MASK;
         EEPROM.put(_EE_MASK_ADDR, mask);
+        Serial.println("Set mask to " + String(mask, BIN));
       } else
 
       if (cmd == "alm") {
         testAlarm();
+        Serial.println("Test alarm");
       } else      
 
       if (cmd.startsWith("tone")) {
         val = cmd.substring(5).toInt();
-        setupFreq(val);
+        val = setupFreq(val);
+        Serial.println("Set tone to " + String(val, DEC) + " Hz");
       } else
         
       if (cmd == "notone") {
         noTone(_gen);
         _freq = 0;
+        Serial.println("Tone off");
       } else
                           
       if (cmd.startsWith("tms")) { // 0, 1
@@ -247,20 +253,21 @@ void loop() {
         ptrn[3]  = cmd.substring(15,17).toInt();
         ptrn[4]  = cmd.substring(18).toInt();
         tmProg(ch, ptrn, 5);
+        Serial.println("Set pattern OK");
       } else
    
       if (cmd == "help") {
         Serial.println("Commands:"
-          "\r\n\thelp - this help"
-          "\r\n\tver - firmware version"
-          "\r\n\tstate - human readable output"
-          "\r\n\tgetstate - server request output"
-          "\r\n\tsetmask mask - set mask on scanned channels, decimal, 1 ch - MSB, ..., 12 ch - LSB"
-          "\r\n\ttm pin xx xx xx xx xx - task manager pattern E D N P K"
-          "\r\n\ttms index - task manager state for given record"
-          "\r\n\talm - test alarm"
-          "\r\n\ttone [frequency] - set frequency and tone turn on, 800Hz default"
-          "\r\n\tnotone - tone turn off");
+          "\n\thelp - this help"
+          "\n\tver - firmware version"
+          "\n\tstate - human readable output"
+          "\n\tgetstate - server request output"
+          "\n\tsetmask mask - set channel's mask, 1ch - MSB, ..., 12ch - LSB"
+          "\n\ttm pin xx xx xx xx xx - task manager pattern E D N P K"
+          "\n\ttms index - task manager state for given record"
+          "\n\talm - test alarm"
+          "\n\ttone [frequency] - set frequency and tone turn on, 800Hz default"
+          "\n\tnotone - tone turn off");
       } else
       
       if (cmd == "ver") {
