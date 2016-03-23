@@ -8,79 +8,29 @@
     <link rel="stylesheet" href="/../static/css/bootstrap.min.css">
     <link rel="stylesheet" href="/../monitor/static/css/style.css">
     <link rel="shortcut icon" href="/../monitor/static/img/return.png" type="image/ico">
+    <link rel="shortcut icon" href="/../monitor/static/favicon.ico">
     <title>Channel Monitor</title>
   </head>
 
   <body>
-
+    <div class="flash alert alert-dismissable"><span></span><button type="button" class="close" aria-hidden="true">&times;</button></div>
     <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li><a href="/monitor/config">Config</a></li>
-          <li><a href="/monitor/try_api">Try API</a></li>
-        </ul>
-        <h3 class="text-muted">
-          <a class="brand" href="/monitor">Channel Monitor</a>
-        </h3>
-      </div>
-      <div id='content'></div>    
+      <div id="header" class="header"></div>
+      <div id='target'></div>    
     </div>
     
-    <div class="footer">
-      <span class="pull-right">&copy; UkSATSE 2016</span>
-    </div>
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="pull-right"><a href="http://www.uksatse.ua" target="_blank" data-bypass>&copy; UkSATSE 2016</a></div>
+      </div>
+    </footer>
 
     <script src="/../static/js/jquery.min.js"></script>
     <script src="/../static/js/bootstrap.min.js"></script>
-    <script src="/../static/js/underscore.min.js"></script>
-    <script src="/../static/js/backbone.min.js"></script>
+    <script src="/../static/js/web2spa.js"></script>
     <script src="/../monitor/static/js/app.js"></script>
-    
-    <!-- templates -->
-    
-    <script id="ChannelTmpl" type="text/html">        
-      <td><%=idx%></td>
-      <td><%=title%></td>
-      <td><%=state%></td>
-    </script>   
-    
-    <script id="MonitorTmpl" type="text/html">        
-      <table class="table table-striped">
-        <thead><tr><th>#</th><th>Channel</th><th>Status</th></tr></thead>
-        <%=tbody%>
-      </table>
-    </script>   
+    <script src="/../monitor/static/js/controllers.js"></script>
 
-    <script id="TryAPITmpl" type="text/html">
-      <div class="panel panel-primary">
-        <div class="panel-heading"><label>Monitor API</label></div>
-        <div class="panel-body">      
-          
-          <form id="form-api" class="form-horizontal" role="form">
-            <div class="form-group">
-              <label for="command" class="col-sm-2 control-label">Command</label>
-              <div class="col-sm-10">
-                <input id="command" class="form-control" placeholder="help" value="help">
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10">
-                <button type="submit" class="btn btn-default">Send</button>
-                <button id="clear" class="btn btn-default">Clear</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10">
-                <textarea id="textarea" class="form-control" cols="10" rows="15"></textarea>
-              </div>
-            </div>  
-          </form>
-          
-        </div>
-      </div>
-    </script> 
-        
-    <!-- templates -->
   </body>
 </html>
 

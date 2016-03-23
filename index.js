@@ -6,11 +6,9 @@
 */
 
 var http = require("http"),
+    cluster = require('cluster'),
     responder = require("./responder"),
-    cluster = require('cluster'), /* for restarting monitor service */
-    monitor = require("./monitor/api"), /* monitor module */
-    cfg = require("./config.json"), /* server confiration */
-    port = process.argv[2] || cfg.port;
+    monitor = require("./monitor/api");
 
 if (cluster.isMaster) {
   cluster.fork();
@@ -19,13 +17,16 @@ if (cluster.isMaster) {
     cluster.fork();
   });
 } else if (cluster.isWorker) { 
-
-  cfg.loaded = [monitor]; /* loaded modules, so no need require */
+  var cfg = require("./config.json"), /* app confiration */
+      lexicon = require("./lexicon.json"), /* internationalization */
+      port = process.argv[2] || cfg.port;
+  cfg.loaded = [monitor]; /* loaded api modules, so no need require */
+  cfg.lexicon = lexicon;
   responder.setup(cfg);
+  monitor.setup(cfg);
   http.createServer(responder.responder).listen(parseInt(port, 10));  
   console.log(
     '\nHTTP server running at http://localhost:' + port,
-    '\nStarting at', monitor.getDT().dt,
     '\n(press Ctrl-C to exit)'
   );
   monitor.welcome(); 

@@ -27,20 +27,23 @@ var path = require("path"),
       /* add your own mime types for responseFile */
       '.html': 'text/html; charset=UTF-8',
       '.txt': 'text/plain',
+      '.css': 'text/css',
       '.jpeg': 'image/jpeg',
       '.jpg': 'image/jpeg'
     };
   /* end vars */
 
+String.prototype.splitOnce = function(dt) {
+  var self = String(this),
+      pos = self.indexOf(dt);
+  return (pos >=0 ) ? [self.substr(0, pos), self.substr(pos+dt.length)] : [self, ''];
+} 
+
 function setup(_cfg) { /* responder confiration */
   cfg = _cfg;
   cfg.server_static = _cfg['server-static'] || 'static';
   cfg.app_static = _cfg['app-static'] || 'static';
-}
-
-function detachQs(str) {
-  var pos = str.indexOf('?');
-  return (pos >=0 ) ? [str.substr(0, pos), str.substr(pos + 1)] : [str, ''];
+  cfg.api = 'api';
 }
 
 function extendObj(orig, add) {
@@ -58,14 +61,15 @@ function escapeJSON(obj) {
 }
 
 function createCustomRequest(_req) {
-  var _url = _req.url,
-      uurl = qs.unescape(path.normalize(_url)),
-      parts = detachQs(uurl),
+
+  var _url = path.normalize(_req.url),
+      uurl = qs.unescape(_url),
+      parts = uurl.splitOnce('?'),
       req = path.parse(parts[0]),
       idx = 2;
   req.url = _url; // original url
   req.uurl = uurl; // unescaped url
-  req.uri = decodeURI(_url);
+  req.uri = decodeURI(_req.url);
   req.path = parts[0];
   req.query = parts[1];
   req.vars = qs.parse(req.query);
@@ -88,6 +92,9 @@ function createCustomRequest(_req) {
   req.cwd = root;
   req.approot = path.join(root, req.application);
   req.abs = path.join(root, req.path); // absolute filename
+  
+  parts = _req.headers['accept-language'].splitOnce(','); // 'en-us,ru;q=0.5', 'ru,en-us;q=0.5', 'uk,ru;q=0.8,en-US;q=0.6,en;q=0.4'
+  req.lang = parts[0].toLowerCase();
 
   return req;
 }
@@ -130,11 +137,16 @@ function responder(request, response) {
       foo,
       req = createCustomRequest(request);
 
-  request.addListener("data", function(chunk) {
-    postData += chunk;
+  request.on("data", function(chunk) {
+    postData += chunk;  
+    if (postData.length > 1e6) {
+      postData = ""; // flood protect
+      response.writeHead(413, {'Content-Type': 'text/plain'}).end();
+      request.connection.destroy();
+    }
   });
 
-  request.addListener("end", function() {
+  request.on("end", function() {
 
     if (postData) extendObj(req.vars, qs.parse(postData)); // add post data to vars object
 
