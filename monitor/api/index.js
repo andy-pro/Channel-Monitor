@@ -57,7 +57,6 @@ var serialport = require("serialport"),
     qs = require("querystring"),
     fs = require("fs"),
     sp, /* hardware serial port instance */
-    sp_last_cmd, /* last command cache */  
     _req, // global request
     L, // global lexicon
     WDT, /* Watch Dog Timer */
@@ -77,12 +76,12 @@ var serialport = require("serialport"),
     */
     dfr = { };
 
-function T(s) {
+function T(s) { // translate, dictionary in 'lexicon.json'
   var idx = -1,
       lang = _req.lang,
       langs = L.order;
   if ( lang === 'en-us') return s;
-  for(var i=0; i < langs.length; i++) 
+  for(var i=0; i < langs.length; i++)
     if (lang === langs[i]) {
       idx = i;
       break;
@@ -97,9 +96,9 @@ function writeToMonitor(req, cb) {
     state: 'pending',
     server: (typeof cb == 'function') // is there request from web-client?
   };
-  if (dfr.server) dfr.cb = cb;   
+  if (dfr.server) dfr.cb = cb;
   if (sp && sp.isOpen()) sp.write(dfr.req + '\r');
-  else if (dfr.server) cb({status: 'serial port closed', time: getDT().dt, query: dfr.req});   
+  else if (dfr.server) cb({status: 'serial port closed', time: getDT().dt, query: dfr.req});
 }
 
 function writeToLog() {
@@ -152,7 +151,7 @@ function spParseState(data) {
   }
 }
 
-function spParseData(data) {  
+function spParseData(data) {
   data = data.trim();
   if (dfr.state == 'pending' && dfr.req == data) dfr.state = 'begining';
   else if (dfr.state == 'begining' && data) {
@@ -161,27 +160,27 @@ function spParseData(data) {
     else { // request from self
       if (dfr.req == 'getstate') spParseState(data);
       else console.log(data + '\n');
-    }         
-  }  
+    }
+  }
 }
 
-function startMonitor(comName) {  
-  console.log(('\nArduino Channel Monitor board found on ' + comName).bold.bgGreen);    
+function startMonitor(comName) {
+  console.log(('\nArduino Channel Monitor board found on ' + comName).bold.bgGreen);
   sp = new serialport.SerialPort(comName, { /* serial port instance configuration */
     baudrate: 115200,
     parser: serialport.parsers.readline("\r\n")
-  });    
+  });
   sp.on("open", function () {
     writeToMonitor('ver');
-  });  
+  });
   sp.on('close', function () {
     console.log('SerialPort closed'.bgRed, '\nTry to reconnect');
     process.exit(-1);
-  });  
+  });
   sp.on('error', function (err) {
     console.log('SerialPort error'.bold.red, err);
-  });  
-  sp.on('data', spParseData);   
+  });
+  sp.on('data', spParseData);
 }
 
 function getDT(/* get listening Dream Theater in all Date & Time */) {
@@ -197,13 +196,13 @@ function getDT(/* get listening Dream Theater in all Date & Time */) {
 
 function restartMonitor() {
   if (sp && sp.isOpen()) sp.close();
-  else process.exit(-1);  
+  else process.exit(-1);
 }
 
 var api = {
-  
+
   name: 'monitor', // necessary for responder, cfg.loaded...
-  
+
   setup: function(_cfg) {
     cfg = _cfg;
     L = _cfg.lexicon;
@@ -214,39 +213,39 @@ var api = {
       }
     }
   },
- 
+
   getDT: getDT,
-  
+
   welcome: function() {
     var msg = getDT().dt + ' start Channel Monitor System';
     writeToLog(msg, '========== ======== ===== ======= ======= ======'); // tipa banner :)
-    console.log('\n' + msg.bold.yellow, '\nUkSATSE'.bold.cyan, 'Telecommunication Service'); 
+    console.log('\n' + msg.bold.yellow, '\nUkSATSE'.bold.cyan, 'Telecommunication Service');
   },
-  
+
   connect: function() {
-    
-    var self = this, 
-        comName;        
-    serialport.list(function (err, ports) {        
+
+    var self = this,
+        comName;
+    serialport.list(function (err, ports) {
       ports.forEach(function(port) {
         if (/^Arduino/.test(port.manufacturer)) comName = port.comName;
       });
       self.comName = comName;
       if (comName) startMonitor(comName);
-      else console.log('Channel Monitor board not found'.bold.red);        
+      else console.log('Channel Monitor board not found'.bold.red);
     });
 
     WDT = 0;
-    
+
     setInterval(function() {
       WDT++;
       if (WDT > cfg.interval) restartMonitor(); /* restart time */
       else writeToMonitor('getstate');
     },
-    1000);  
-    
+    1000);
+
   },
-  
+
   monitor: function(req, res) {
     res({interval: cfg.interval, channels: cfg.channels});
   },
@@ -271,20 +270,20 @@ var api = {
   getstate: function(req, res) {
     res(env);
   },
-  
-  getlog: function(req, res) {    
+
+  getlog: function(req, res) {
     fs.readFile(logfile, 'utf-8', function(err, file) {
       if (err) res({status: 'error reading log file', error: err});
       else res({log: file});
-    });    
+    });
   },
-  
-  clearlog: function(req, res) {    
+
+  clearlog: function(req, res) {
     fs.unlink(logfile, function(err) {
       res(err ? 'Error' : 'Log file is empty');
-    });    
+    });
   },
-    
+
   lexicon: function(req, res) {
     _req = req;
     res({
@@ -304,12 +303,12 @@ var api = {
       _STATUS_: T('Status')
     });
   },
-  
+
   restart: function(req, res) {
     res('The server will restart in 5 seconds');
     setTimeout(restartMonitor, 5000);
   }
-  
+
 }
 
 module.exports = api;

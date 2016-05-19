@@ -14,16 +14,17 @@
 // global constants
 #define FREQ 800
 #define _speed 115200
-#define _squelch 10 /* 70-80 for meandr */
-#define _freq_delta 5
+//#define _squelch 2 /* 70-80 for meandr */
+#define _freq_delta 10
 #define _channel_cnt 12
 #define _EE_MASK_ADDR 0
+#define _EE_SQUELCH_ADDR 10
 #define _MASK 0xFFF
 
 #define _btn 7
 #define _gen 11
-// Aref = Internal 2.56V Reference, left align the ADC value - read ADCH only
-#define ADMUX_SETUP (1<<REFS1)|(1<<REFS0)|(1<<ADLAR) 
+// Aref = External Reference on AREF pin, left align the ADC value - read ADCH only
+#define ADMUX_SETUP (0<<REFS1)|(0<<REFS0)|(1<<ADLAR) 
 
 #define _buzzer 3
 #define _led 13
@@ -39,7 +40,7 @@ struct Channel {
 // global vars
 Channel channels[_channel_cnt];
 word _freq, _fmin, _fmax, raw_state, masked_state, mask;
-byte alarmingChannel;
+byte alarmingChannel, squelch;
 boolean alarm = false;
 
 word setupFreq(word value) {
@@ -69,7 +70,7 @@ void testAlarm() {
 }
 
 void printState() {
-  Serial.print("Frequency set to " + String(_freq, DEC) + "Hz");
+  Serial.print("Frequency " + String(_freq, DEC) + "Hz, squelch " + String(squelch, DEC));
   if (alarmingChannel) Serial.print("\nAlarm! Channel: " + String(alarmingChannel, DEC));
   Serial.print("\nChannel\tConn\tPin\tState\tMask\tFrequency"); 
   word m = mask;
@@ -91,7 +92,8 @@ void setup() {
   pinMode(_btn, INPUT_PULLUP); 
   pinMode(_led, OUTPUT); 
   setupFreq(0); 
-  EEPROM.get(_EE_MASK_ADDR, mask); 
+  EEPROM.get(_EE_MASK_ADDR, mask);
+  EEPROM.get(_EE_SQUELCH_ADDR, squelch);
   /* 
    * channel structures setup  
    * mega32u4 pin: 41,40,39,38,37,36,25,26,27,28,29,30
@@ -141,13 +143,13 @@ ISR(ADC_vect) { //when new ADC value ready, period 4*13 = 52 mcs
     
   prevData = newData;//store previous value
   newData = ADCH;//get value from A0
-  if (((newData-prevData) > _squelch) && !state) { // if increasing slope
+  if (((newData-prevData) > squelch) && !state) { // if increasing slope
     /* for debug  
      * Serial.println(String(idx, DEC)+" inc "+String(newData-prevData, DEC));
      */
     state = true;
     freq++; // one period
-  } else if (((prevData-newData) > _squelch) && state) {
+  } else if (((prevData-newData) > squelch) && state) {
     state = false;
     /* for debug  
      *Serial.println(String(idx, DEC)+" dec "+String(prevData-newData, DEC));
@@ -231,6 +233,12 @@ void loop() {
         val = cmd.substring(5).toInt();
         val = setupFreq(val);
         Serial.println("Set tone to " + String(val, DEC) + " Hz");
+      } else
+        
+      if (cmd.startsWith("squelch")) {
+        squelch = cmd.substring(8).toInt();
+        EEPROM.put(_EE_SQUELCH_ADDR, squelch);
+        Serial.println("Squelch level set to " + String(squelch, DEC));
       } else
         
       if (cmd == "notone") {

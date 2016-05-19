@@ -37,7 +37,7 @@ String.prototype.splitOnce = function(dt) {
   var self = String(this),
       pos = self.indexOf(dt);
   return (pos >=0 ) ? [self.substr(0, pos), self.substr(pos+dt.length)] : [self, ''];
-} 
+}
 
 function setup(_cfg) { /* responder confiration */
   cfg = _cfg;
@@ -92,7 +92,7 @@ function createCustomRequest(_req) {
   req.cwd = root;
   req.approot = path.join(root, req.application);
   req.abs = path.join(root, req.path); // absolute filename
-  
+
   parts = _req.headers['accept-language'].splitOnce(','); // 'en-us,ru;q=0.5', 'ru,en-us;q=0.5', 'uk,ru;q=0.8,en-US;q=0.6,en;q=0.4'
   req.lang = parts[0].toLowerCase();
 
@@ -138,7 +138,7 @@ function responder(request, response) {
       req = createCustomRequest(request);
 
   request.on("data", function(chunk) {
-    postData += chunk;  
+    postData += chunk;
     if (postData.length > 1e6) {
       postData = ""; // flood protect
       response.writeHead(413, {'Content-Type': 'text/plain'}).end();
